@@ -1,0 +1,9 @@
+{
+  "name": "socket-event",
+  "version": "1.0.0",
+  "description": "Biblioteca que abstrai a comunicação de sockets em forma de eventos.",
+  "main": "index.js",
+  "keywords": [],
+  "author": "Giovani Freitag",
+  "license": "ISC"
+}
