@@ -16,10 +16,21 @@ class Socket{
     handleSocketEvents(){
 
         this.connection.on('data', data => {
-
+            this.dispatch('data', data);
             let event = EventStreamSerializer.decode(data);
-
             this.dispatch(event.name, ...event.params);
+        });
+
+        this.connection.on('connect', ...args => {
+            this.dispatch('connect', ...args);
+        });
+
+        this.connection.on('timeout', ...args => {
+            this.dispatch('timeout', ...args);
+        });
+
+        this.connection.on('error', ...args => {
+            this.dispatch('error', ...args);
         });
     }
 
