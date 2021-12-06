@@ -57,6 +57,16 @@ class Socket{
         return this;
     }
 
+    once(event, cb){
+
+        let fn = (...args) => {
+            this.off(event, cb);
+            cb(...args);
+        }
+
+        return this.on(event, fn);
+    }
+
     off(event, cb){
 
         var pos = this.eventStack[event].indexOf(cb);
