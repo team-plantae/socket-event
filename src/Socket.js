@@ -32,6 +32,10 @@ class Socket{
         this.connection.on('error', (...args) => {
             this.dispatch('error', ...args);
         });
+
+        this.connection.on('close', (...args) => {
+            this.dispatch('close', ...args);
+        });
     }
 
     dispatch(event, ...params){
