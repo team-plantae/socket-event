@@ -20,6 +20,10 @@ class Server{
         this.server = new NetServer();
     }
 
+    close(){
+        this.server.close();
+    }
+
     listen(){
 
         this.server.on('connection', socket => this.handleSocketConnect(socket));
