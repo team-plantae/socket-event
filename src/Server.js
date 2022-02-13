@@ -37,7 +37,7 @@ class Server extends EventEmitter{
 
         this.emit('connection', eventSocket);
 
-        socket.on('end', () => this.handleSocketDisconnection(eventSocket));
+        socket.on('close', () => this.handleSocketDisconnection(eventSocket));
     }
 
     handleSocketDisconnection(eventSocket){
