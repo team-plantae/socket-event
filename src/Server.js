@@ -44,7 +44,7 @@ class Server{
 
         var pos = this.sockets.indexOf(eventSocket);
 
-        if(!~pos){
+        if(!!~pos){
             this.sockets.splice(pos, 1);
         }
 
