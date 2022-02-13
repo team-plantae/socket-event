@@ -37,7 +37,7 @@ class Server{
 
         this.eventHandler.emit('connection', eventSocket);
 
-        socket.on('end', () => this.handleSocketDisconnect(eventSocket));
+        socket.on('end', () => this.handleSocketDisconnection(eventSocket));
     }
 
     handleSocketDisconnection(eventSocket){
