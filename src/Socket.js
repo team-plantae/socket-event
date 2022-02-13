@@ -64,7 +64,7 @@ class Socket{
     once(event, cb){
 
         let fn = (...args) => {
-            this.off(event, cb);
+            this.off(event, fn);
             cb(...args);
         }
 

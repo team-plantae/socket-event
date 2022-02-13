@@ -1,14 +1,14 @@
 const {Server: NetServer}   = require('net');
 const Socket                = require('./Socket');
-const EventDriven           = require('./EventDriven');
+const { EventEmitter }      = require("events");
 
 
-class Server{
+class Server extends EventEmitter{
 
     constructor(port){
+        super();
         this.port = port;
         this.sockets = [];
-        this.eventHandler = new EventDriven();
 
         this.startServer();
         this.listen();
@@ -35,7 +35,7 @@ class Server{
         let eventSocket = new Socket(socket);
         this.sockets.push(eventSocket);
 
-        this.eventHandler.emit('connection', eventSocket);
+        this.emit('connection', eventSocket);
 
         socket.on('end', () => this.handleSocketDisconnection(eventSocket));
     }
@@ -48,12 +48,7 @@ class Server{
             this.sockets.splice(pos, 1);
         }
 
-        this.eventHandler.emit('disconnection', eventSocket);
-    }
-
-    on(...args){
-        this.eventHandler.on(...args);
-        return this;
+        this.emit('disconnection', eventSocket);
     }
 }
 
