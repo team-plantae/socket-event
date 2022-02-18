@@ -26,8 +26,11 @@ class Server extends EventEmitter{
 
     listen(){
 
-        this.server.on('connection', socket => this.handleSocketConnection(socket));
-        this.server.listen(this.port);
+        this.server
+            .on('connection', this.handleSocketConnection.bind(this))
+            .on('error', this.handleSocketError.bind(this))
+            .on('listening', this.handleListeningError.bind(this))
+            .listen(this.port);
     }
 
     handleSocketConnection(socket){
@@ -38,6 +41,16 @@ class Server extends EventEmitter{
         this.emit('connection', eventSocket);
 
         socket.on('close', () => this.handleSocketDisconnection(eventSocket));
+    }
+
+    handleSocketError(...args){
+
+        this.emit('error', ...args);
+    }
+
+    handleListeningError(...args){
+
+        this.emit('listening', ...args);
     }
 
     handleSocketDisconnection(eventSocket){
