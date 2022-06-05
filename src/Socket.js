@@ -73,7 +73,7 @@ class Socket{
 
     off(event, cb){
 
-        var pos = this.eventStack[event].indexOf(cb);
+        let pos = this.eventStack[event].indexOf(cb);
 
         if(!!~pos){
             this.eventStack[event].splice(pos, 1);

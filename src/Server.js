@@ -29,7 +29,7 @@ class Server extends EventEmitter{
         this.server
             .on('connection', this.handleSocketConnection.bind(this))
             .on('error', this.handleSocketError.bind(this))
-            .on('listening', this.handleListeningError.bind(this))
+            .on('listening', this.handleSocketListening.bind(this))
             .listen(this.port);
     }
 
@@ -48,14 +48,14 @@ class Server extends EventEmitter{
         this.emit('error', ...args);
     }
 
-    handleListeningError(...args){
+    handleSocketListening(...args){
 
         this.emit('listening', ...args);
     }
 
     handleSocketDisconnection(eventSocket){
 
-        var pos = this.sockets.indexOf(eventSocket);
+        let pos = this.sockets.indexOf(eventSocket);
 
         if(!!~pos){
             this.sockets.splice(pos, 1);
