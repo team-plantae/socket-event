@@ -5,7 +5,15 @@ class EventStreamSerializer{
     }
 
     static decode(event){
-        return JSON.parse(Buffer.from(event, 'base64'));
+
+        let buffer = Buffer.from(event, 'base64');
+
+        try {
+            return JSON.parse(buffer);
+        }
+        catch (e) {
+            throw new Error(`Trucated event. Payload: ${event}, Decoded: ${buffer}.`);
+        }
     }
 }
 

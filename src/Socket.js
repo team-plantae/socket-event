@@ -17,8 +17,14 @@ class Socket{
 
         this.connection.on('data', data => {
             this.dispatch('data', data);
-            let event = EventStreamSerializer.decode(data);
-            this.dispatch(event.name, ...event.params);
+
+            try {
+                let event = EventStreamSerializer.decode(data);
+                this.dispatch(event.name, ...event.params);
+            }
+            catch (e) {
+                this.dispatch('error', e);
+            }
         });
 
         this.connection.on('connect', (...args) => {
