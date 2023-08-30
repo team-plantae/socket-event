@@ -1,11 +1,11 @@
-const {Server: NetServer}   = require('net');
-const Socket                = require('./Socket');
-const { EventEmitter }      = require('events');
-const Log                   = require('electron-log');
+const { Server: NetServer } = require('net');
+const Socket = require('./Socket');
+const { EventEmitter } = require('events');
+const Log = require('electron-log');
 
-class Server extends EventEmitter{
+class Server extends EventEmitter {
 
-    constructor(port){
+    constructor(port) {
         super();
 
         this.shouldLog = false;
@@ -13,27 +13,27 @@ class Server extends EventEmitter{
         this.sockets = [];
 
         this.prepareLog();
-        this.startServer();
+        this.init();
         this.listen();
     }
 
-    prepareLog(){
+    prepareLog() {
 
         Log.transports.file.resolvePathFn = () => `${__dirname}/socket-event.log`;
         this.handleDataLog = this.handleDataLog.bind(this);
     }
 
-    startServer(){
+    init() {
 
         this.server = new NetServer();
     }
 
-    close(){
+    close() {
 
         this.server.close();
     }
 
-    listen(){
+    listen() {
 
         this.server
             .on('connection', this.handleSocketConnection.bind(this))
@@ -42,11 +42,16 @@ class Server extends EventEmitter{
             .listen(this.port);
     }
 
-    handleSocketConnection(socket){
+    broadcast(event, ...params){
+
+        this.sockets.forEach(socket => socket.emit(event, ...params));
+    }
+
+    handleSocketConnection(socket) {
 
         let eventSocket = new Socket(socket);
 
-        if(this.shouldLog)
+        if (this.shouldLog)
             eventSocket.on('data', this.handleDataLog);
 
         this.sockets.push(eventSocket);
@@ -56,38 +61,38 @@ class Server extends EventEmitter{
         socket.on('close', () => this.handleSocketDisconnection(eventSocket));
     }
 
-    handleSocketError(...args){
+    handleSocketError(...args) {
 
         this.emit('error', ...args);
     }
 
-    handleSocketListening(...args){
+    handleSocketListening(...args) {
 
         this.emit('listening', ...args);
     }
 
-    handleSocketDisconnection(eventSocket){
+    handleSocketDisconnection(eventSocket) {
 
         let pos = this.sockets.indexOf(eventSocket);
 
-        if(!!~pos){
+        if (!!~pos) {
             this.sockets.splice(pos, 1);
         }
 
         this.emit('disconnection', eventSocket);
     }
 
-    handleDataLog(socket, message){
+    handleDataLog(socket, message) {
         Log.info(`[${socket.remoteAddress}]: ${message}`);
     }
 
-    enableLog(){
+    enableLog() {
 
         this.sockets.forEach(socket => socket.on('data', this.handleDataLog));
         this.shouldLog = true;
     }
 
-    disableLog(){
+    disableLog() {
 
         this.sockets.forEach(socket => socket.off('data', this.handleDataLog));
         this.shouldLog = false;

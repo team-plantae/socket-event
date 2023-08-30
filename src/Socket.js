@@ -1,19 +1,19 @@
-const EventStreamSerializer   = require('./EventStreamSerializer');
-const Event                   = require('./Event');
+const EventStreamSerializer = require('./EventStreamSerializer');
+const Event = require('./Event');
 
-class Socket{
+class Socket {
 
-    constructor(socket){
+    constructor(socket) {
 
         this.eventStack = [];
-        
+
         this.connection = socket;
         this.connection.setEncoding('utf8');
 
         this.handleSocketEvents();
     }
 
-    handleSocketEvents(){
+    handleSocketEvents() {
 
         this.connection.on('data', data => {
             this.dispatch('data', data);
@@ -44,22 +44,22 @@ class Socket{
         });
     }
 
-    dispatch(event, ...params){
+    dispatch(event, ...params) {
 
-        if(!this.eventStack[event]) return;
+        if (!this.eventStack[event]) return;
         this.eventStack[event].forEach(cb => cb(...params));
     }
 
-    emit(event, ...params){
+    emit(event, ...params) {
 
         let encodedEvent = EventStreamSerializer.encode(new Event(event, ...params));
         this.connection.write(encodedEvent);
         return this;
     }
 
-    on(event, cb){
+    on(event, cb) {
 
-        if(!this.eventStack[event]){
+        if (!this.eventStack[event]) {
             this.eventStack[event] = [];
         }
 
@@ -67,7 +67,7 @@ class Socket{
         return this;
     }
 
-    once(event, cb){
+    once(event, cb) {
 
         let fn = (...args) => {
             this.off(event, fn);
@@ -77,11 +77,11 @@ class Socket{
         return this.on(event, fn);
     }
 
-    off(event, cb){
+    off(event, cb) {
 
         let pos = this.eventStack[event].indexOf(cb);
 
-        if(!!~pos){
+        if (!!~pos) {
             this.eventStack[event].splice(pos, 1);
         }
     }
