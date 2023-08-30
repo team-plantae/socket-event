@@ -1,30 +1,29 @@
-const {Server: NetServer}   = require('net');
-const Socket                = require('./Socket');
-const { EventEmitter }      = require("events");
+const { Server: NetServer } = require('net');
+const Socket = require('./Socket');
+const { EventEmitter } = require('events');
 
+class Server extends EventEmitter {
 
-class Server extends EventEmitter{
-
-    constructor(port){
+    constructor(port) {
         super();
         this.port = port;
         this.sockets = [];
 
-        this.startServer();
+        this.init();
         this.listen();
     }
 
-
-    startServer(){
+    init() {
 
         this.server = new NetServer();
     }
 
-    close(){
+    close() {
+
         this.server.close();
     }
 
-    listen(){
+    listen() {
 
         this.server
             .on('connection', this.handleSocketConnection.bind(this))
@@ -33,7 +32,12 @@ class Server extends EventEmitter{
             .listen(this.port);
     }
 
-    handleSocketConnection(socket){
+    broadcast(event, ...params){
+
+        this.sockets.forEach(socket => socket.emit(event, ...params));
+    }
+
+    handleSocketConnection(socket) {
 
         let eventSocket = new Socket(socket);
         this.sockets.push(eventSocket);
@@ -43,21 +47,21 @@ class Server extends EventEmitter{
         socket.on('close', () => this.handleSocketDisconnection(eventSocket));
     }
 
-    handleSocketError(...args){
+    handleSocketError(...args) {
 
         this.emit('error', ...args);
     }
 
-    handleSocketListening(...args){
+    handleSocketListening(...args) {
 
         this.emit('listening', ...args);
     }
 
-    handleSocketDisconnection(eventSocket){
+    handleSocketDisconnection(eventSocket) {
 
         let pos = this.sockets.indexOf(eventSocket);
 
-        if(!!~pos){
+        if (!!~pos) {
             this.sockets.splice(pos, 1);
         }
 

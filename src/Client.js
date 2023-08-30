@@ -1,10 +1,10 @@
-const {Socket: NetClient}   = require('net');
-const Socket                = require('./Socket');
+const { Socket: NetClient } = require('net');
+const Socket = require('./Socket');
 
 
-class Client extends Socket{
+class Client extends Socket {
 
-    constructor(host, port){
+    constructor(host, port) {
         super(new NetClient().connect(port, host));
 
         this.host = host;

@@ -1,10 +1,10 @@
-class EventStreamSerializer{
+class EventStreamSerializer {
 
-    static encode(event){
+    static encode(event) {
         return `${Buffer.from(JSON.stringify(event)).toString('base64')}\n`;
     }
 
-    static decode(event){
+    static decode(event) {
 
         let buffer = Buffer.from(event, 'base64');
 

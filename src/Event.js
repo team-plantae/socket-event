@@ -1,6 +1,6 @@
-class Event{
+class Event {
 
-    constructor(name, ...params){
+    constructor(name, ...params) {
         this.name = name;
         this.params = params;
     }
