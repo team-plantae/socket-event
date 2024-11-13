@@ -1,0 +1,26 @@
+{
+  "name": "socket-event",
+  "version": "1.0.0",
+  "description": "A TCP socket library for event-driven communication.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "prepare": "npm run build"
+  },
+  "keywords": ["socket", "tcp", "event-driven", "networking"],
+  "author": "Plantae",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@vitest/coverage-v8": "^2.1.4",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
