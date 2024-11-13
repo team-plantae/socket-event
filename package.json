@@ -23,6 +23,10 @@
   "author": "Plantae",
   "license": "MIT",
   "homepage": "https://github.com/team-plantae/socket-event/tree/v2#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/team-plantae/socket-event.git"
+  },
   "devDependencies": {
     "@types/node": "^22.9.0",
     "@vitest/coverage-v8": "^2.1.4",
