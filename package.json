@@ -1,6 +1,6 @@
 {
   "name": "tcp-socket-event",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A TCP socket library for event-driven communication.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
