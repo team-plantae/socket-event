@@ -1,6 +1,6 @@
 {
   "name": "tcp-socket-event",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A TCP socket library for event-driven communication.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,7 +14,12 @@
     "test:coverage": "vitest --coverage",
     "prepare": "npm run build"
   },
-  "keywords": ["socket", "tcp", "event-driven", "networking"],
+  "keywords": [
+    "socket",
+    "tcp",
+    "event-driven",
+    "networking"
+  ],
   "author": "Plantae",
   "license": "MIT",
   "homepage": "https://github.com/team-plantae/socket-event/tree/v2#readme",
