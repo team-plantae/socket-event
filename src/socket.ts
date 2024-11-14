@@ -13,6 +13,8 @@ export class Socket extends EventEmitter {
         this.socket.on('data', this.handleData.bind(this));
         this.socket.on('error', this.handleError.bind(this));
         this.socket.on('close', this.handleClose.bind(this));
+        this.socket.on('end', this.handleEnd.bind(this));
+        this.socket.on('connect', this.handleConnect.bind(this));
     }
 
     public emit(eventName: string, ...args: any[]): boolean {
@@ -50,7 +52,15 @@ export class Socket extends EventEmitter {
         super.emit('error', error);
     }
 
+    protected handleConnect() {
+        super.emit('connect');
+    }
+
     protected handleClose() {
         super.emit('close');
+    }
+
+    protected handleEnd() {
+        super.emit('end');
     }
 }

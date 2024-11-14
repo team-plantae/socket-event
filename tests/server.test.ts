@@ -54,9 +54,6 @@ vi.mock('net', () => ({
                 return this;
             }),
             emit: vi.fn(function (this: any, event: string, ...args: any[]) {
-
-                console.log('emit');
-
                 if (this.handlers[event]) {
                     this.handlers[event].forEach((callback: (...args: any[]) => void) => callback(...args));
                 }
@@ -159,7 +156,7 @@ describe('Server', () => {
         server.close();
 
         expect(netServerInstance.close).toHaveBeenCalled();
-        expect(netSocketInstance.destroy).toHaveBeenCalled();
+        expect(netSocketInstance.end).toHaveBeenCalled();
     });
 
     it('should broadcast an event to all connected sockets', () => {

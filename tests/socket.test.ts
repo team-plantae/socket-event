@@ -47,29 +47,53 @@ describe('Socket', () => {
         vi.mocked(NetSocket).mockClear();
     });
 
-    it('should terminate TCP connection on close', () => {
+    it('should emit an "connect" event when the underlying socket establishes a connection', () => {
+        const netSocket = new NetSocket() as MockedObject<NetSocket>;
+        const socket = new Socket(netSocket);
+    
+        const listener = vi.fn();
+        socket.on('connect', listener);
+    
+        netSocket.emit('connect');
+    
+        expect(listener).toHaveBeenCalled();
+    });
+
+    it('should emit an "close" event when the underlying socket closes', () => {
         const netSocket = new NetSocket() as MockedObject<NetSocket>;
         const socket = new Socket(netSocket);
 
-        const closeListener = vi.fn();
-        socket.on('close', closeListener);
+        const listener = vi.fn();
+        socket.on('close', listener);
 
         netSocket.emit('close');
 
-        expect(closeListener).toHaveBeenCalled();
+        expect(listener).toHaveBeenCalled();
     });
 
-    it('should emit an error event on socket error', () => {
+    it('should emit an "end" event when the underlying socket ends', () => {
+        const netSocket = new NetSocket() as MockedObject<NetSocket>;
+        const socket = new Socket(netSocket);
+    
+        const listener = vi.fn();
+        socket.on('end', listener);
+    
+        netSocket.emit('end');
+    
+        expect(listener).toHaveBeenCalled();
+    });
+
+    it('should emit an "error" event when there is a socket error', () => {
         const netSocket = new NetSocket() as MockedObject<NetSocket>;
         const socket = new Socket(netSocket);
 
-        const errorListener = vi.fn();
-        socket.on('error', errorListener);
+        const listener = vi.fn();
+        socket.on('error', listener);
 
         const error = new Error('Connection error');
         netSocket.emit('error', error);
 
-        expect(errorListener).toHaveBeenCalledWith(error);
+        expect(listener).toHaveBeenCalledWith(error);
     });
 
     it('should handle data event correctly with encoded event data', () => {

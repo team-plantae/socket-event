@@ -23,7 +23,7 @@ export class Server extends EventEmitter {
 
     public close() {
         this.server.close();
-        this.sockets.forEach(socket => socket.destroy());
+        this.sockets.forEach(socket => socket.disconnect());
         this.sockets.clear();
     }
 
