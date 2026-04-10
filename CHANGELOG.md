@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.3](https://github.com/plantae-technologies/socket-event/compare/v3.0.2...v3.0.3) (2026-04-10)
+
+
+### Bug Fixes
+
+* add commonjs export for require() compatibility ([c97e16f](https://github.com/plantae-technologies/socket-event/commit/c97e16ff1b6812a289c204ff7b65a2c0dcb1db8e))
+
 ## [3.0.2](https://github.com/plantae-technologies/socket-event/compare/v3.0.0...v3.0.2) (2026-04-10)
 
 
