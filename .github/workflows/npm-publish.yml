@@ -4,6 +4,11 @@ on:
   repository_dispatch:
     types: [trigger-npm-publish]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish (e.g. v3.0.0). If empty, uses the latest git tag.'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -13,10 +18,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          TAG="${{ github.event.client_payload.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG="${{ inputs.tag }}"
+          fi
+          if [ -z "$TAG" ]; then
+            TAG=$(git describe --tags --abbrev=0)
+          fi
+          echo "value=$TAG" >> $GITHUB_OUTPUT
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.value }}
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: package.json
           registry-url: https://registry.npmjs.org
 
       - run: npm ci
