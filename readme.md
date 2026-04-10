@@ -1,9 +1,9 @@
-# 🔌 tcp-socket-event
+# 🔌 @plantae-tech/socket-event
 
 A lightweight library for event-driven communication over TCP sockets, enabling structured messaging between servers and clients using a familiar event-based API.
 
-[![npm version](https://img.shields.io/npm/v/tcp-socket-event)](https://www.npmjs.com/package/tcp-socket-event)
-[![license](https://img.shields.io/npm/l/tcp-socket-event)](https://github.com/team-plantae/socket-event/blob/v2/LICENSE)
+[![npm version](https://img.shields.io/npm/v/@plantae-tech/socket-event)](https://www.npmjs.com/package/@plantae-tech/socket-event)
+[![license](https://img.shields.io/npm/l/@plantae-tech/socket-event)](https://github.com/team-plantae/socket-event/blob/master/LICENSE)
 
 ## Features
 
@@ -16,7 +16,7 @@ A lightweight library for event-driven communication over TCP sockets, enabling 
 ## Installation
 
 ```bash
-npm install tcp-socket-event
+npm install @plantae-tech/socket-event
 ```
 
 ## Quick Start
@@ -24,7 +24,7 @@ npm install tcp-socket-event
 ### Server
 
 ```typescript
-import { Server } from 'tcp-socket-event';
+import { Server } from '@plantae-tech/socket-event';
 
 const server = new Server(1337);
 
@@ -51,7 +51,7 @@ server.start();
 ### Client
 
 ```typescript
-import { Client } from 'tcp-socket-event';
+import { Client } from '@plantae-tech/socket-event';
 
 const client = new Client('localhost', 1337);
 

@@ -1,5 +1,5 @@
 {
-  "name": "tcp-socket-event",
+  "name": "@plantae-tech/socket-event",
   "version": "3.0.0",
   "description": "A TCP socket library for event-driven communication.",
   "type": "module",
@@ -35,7 +35,10 @@
   ],
   "author": "Plantae",
   "license": "MIT",
-  "homepage": "https://github.com/team-plantae/socket-event/tree/v2#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/team-plantae/socket-event#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/team-plantae/socket-event.git"
