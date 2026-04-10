@@ -3,7 +3,7 @@
 A lightweight library for event-driven communication over TCP sockets, enabling structured messaging between servers and clients using a familiar event-based API.
 
 [![npm version](https://img.shields.io/npm/v/@plantae-tech/socket-event)](https://www.npmjs.com/package/@plantae-tech/socket-event)
-[![license](https://img.shields.io/npm/l/@plantae-tech/socket-event)](https://github.com/team-plantae/socket-event/blob/master/LICENSE)
+[![license](https://img.shields.io/npm/l/@plantae-tech/socket-event)](https://github.com/plantae-technologies/socket-event/blob/master/LICENSE)
 
 ## Features
 

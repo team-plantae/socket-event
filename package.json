@@ -38,10 +38,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/team-plantae/socket-event#readme",
+  "homepage": "https://github.com/plantae-technologies/socket-event#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/team-plantae/socket-event.git"
+    "url": "https://github.com/plantae-technologies/socket-event.git"
   },
   "devDependencies": {
     "@types/node": "^22.19.17",
