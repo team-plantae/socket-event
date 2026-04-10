@@ -1,0 +1,28 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - v2
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          release-type: node
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger npm publish
+        if: steps.release.outputs.release_created == 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: trigger-npm-publish
+          client-payload: '{"tag": "${{ steps.release.outputs.tag_name }}"}'

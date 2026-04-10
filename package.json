@@ -2,17 +2,30 @@
   "name": "tcp-socket-event",
   "version": "2.0.4",
   "description": "A TCP socket library for event-driven communication.",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "files": [
     "dist/**/*",
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
-    "test": "vitest",
-    "test:coverage": "vitest --coverage",
-    "prepare": "npm run build"
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src tests",
+    "lint:fix": "eslint src tests --fix"
   },
   "keywords": [
     "socket",
@@ -28,9 +41,13 @@
     "url": "https://github.com/team-plantae/socket-event.git"
   },
   "devDependencies": {
-    "@types/node": "^22.9.0",
-    "@vitest/coverage-v8": "^2.1.4",
+    "@types/node": "^22.19.17",
+    "@vitest/coverage-v8": "^4.1.4",
+    "eslint": "^10.2.0",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.4"
+    "typescript-eslint": "^8.58.1",
+    "vite": "^8.0.8",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.1.4"
   }
 }

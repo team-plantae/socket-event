@@ -1,4 +1,4 @@
-import { Event } from './event';
+import type { Event } from './event';
 
 export class EventStreamSerializer {
     static encode(event: Event): string {
@@ -10,7 +10,7 @@ export class EventStreamSerializer {
         const buffer = Buffer.from(event, 'base64');
         try {
             return JSON.parse(buffer.toString()) as Event;
-        } catch (e) {
+        } catch (_e) {
             throw new Error(`Truncated event. Payload: ${event}, Decoded: ${buffer.toString()}.`);
         }
     }

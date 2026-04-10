@@ -1,66 +1,56 @@
 import { Socket as NetSocket } from 'net';
 import { EventEmitter } from 'events';
 import { EventStreamSerializer } from './event-stream-serializer';
-import { Event } from './event';
+import { LineEventDecoder } from './line-event-decoder';
 
 export class Socket extends EventEmitter {
-    protected socket: NetSocket;
+    protected connection: NetSocket;
+    private decoder!: LineEventDecoder;
 
-    constructor(socket: NetSocket) {
+    constructor(connection: NetSocket) {
         super();
-        this.socket = socket;
-
-        this.socket.on('data', this.handleData.bind(this));
-        this.socket.on('error', this.handleError.bind(this));
-        this.socket.on('close', this.handleClose.bind(this));
-        this.socket.on('end', this.handleEnd.bind(this));
-        this.socket.on('connect', this.handleConnect.bind(this));
+        this.connection = connection;
+        this.setupPipeline();
+        this.setupListeners();
     }
 
-    public emit(eventName: string, ...args: any[]): boolean {
-        const event: Event = { name: eventName, params: args };
-        const message = EventStreamSerializer.encode(event);
-        this.socket.write(message);
+    public emit(event: string, data?: unknown): boolean {
+        const encoded = EventStreamSerializer.encode({ name: event, data });
+        this.connection.write(encoded);
         return true;
     }
 
-    public async disconnect(): Promise<void> {
+    public disconnect(): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.socket.once('close', resolve);
-            this.socket.once('error', reject);
-            this.socket.end();
+            this.connection.once('close', resolve);
+            this.connection.once('error', reject);
+            this.connection.end();
         });
     }
 
     public destroy(): void {
-        this.socket.destroy();
+        this.connection.destroy();
     }
 
-    protected handleData(data: Buffer) {
-        const payloads = data.toString().split('\n').filter(Boolean);
-        payloads.forEach(payload => {
-            try {
-                const event = EventStreamSerializer.decode(payload);
-                super.emit(event.name, ...(event.params ?? []));
-            } catch (error) {
-                super.emit('error', error);
-            }
-        });
+    private setupPipeline() {
+        this.decoder = new LineEventDecoder();
+        this.connection.pipe(this.decoder);
     }
 
-    protected handleError(error: Error) {
-        super.emit('error', error);
+    private setupListeners() {
+        this.decoder.on('data', (frame: Buffer) => this.handleDecodedEvent(frame.toString()));
+        this.connection.on('connect', () => super.emit('connect'));
+        this.connection.on('close', () => super.emit('close'));
+        this.connection.on('end', () => super.emit('end'));
+        this.connection.on('error', (error: Error) => super.emit('error', error));
     }
 
-    protected handleConnect() {
-        super.emit('connect');
-    }
-
-    protected handleClose() {
-        super.emit('close');
-    }
-
-    protected handleEnd() {
-        super.emit('end');
+    private handleDecodedEvent(payload: string) {
+        try {
+            const event = EventStreamSerializer.decode(payload);
+            super.emit(event.name, event.data);
+        } catch (error) {
+            super.emit('error', error);
+        }
     }
 }

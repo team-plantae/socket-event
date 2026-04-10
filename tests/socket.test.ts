@@ -2,43 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Socket } from '../src/socket';
 import { Socket as NetSocket } from 'net';
 import { EventStreamSerializer } from '../src/event-stream-serializer';
-import { Event } from '../src/event';
+import type { Event } from '../src/event';
 import type { MockedObject } from 'vitest';
 
-vi.mock('net', () => ({
-    Socket: vi.fn().mockImplementation(function () {
-        return {
-            handlers: {} as Record<string, Array<(...args: any[]) => void>>,
-            connect: vi.fn().mockReturnThis(),
-            destroy: vi.fn(),
-            write: vi.fn(),
-            end: vi.fn(function (this: any) {
-                this.emit('close');
-            }),
-            on: vi.fn(function (this: any, event: string, callback: (...args: any[]) => void) {
-                if (!this.handlers[event]) {
-                    this.handlers[event] = [];
-                }
-                this.handlers[event].push(callback);
-                return this;
-            }),
-            once: vi.fn(function (this: any, event: string, callback: (...args: any[]) => void) {
-                const onceWrapper = (...args: any[]) => {
-                    callback(...args);
-                    this.handlers[event] = this.handlers[event].filter((fn: (...args: any[]) => void) => fn !== onceWrapper);
-                };
-                this.on(event, onceWrapper);
-                return this;
-            }),
-            emit: vi.fn(function (this: any, event: string, ...args: any[]) {
-                if (this.handlers[event]) {
-                    this.handlers[event].forEach((callback: (...args: any[]) => void) => callback(...args));
-                }
-                return this;
-            }),
-        };
-    }),
-}));
+vi.mock('net', async () => import('./mocks/net'));
 
 
 describe('Socket', () => {
@@ -104,7 +71,7 @@ describe('Socket', () => {
         socket.on('data-event', dataListener);
 
         const param = { message: 'test' };
-        const event: Event = { name: 'data-event', params: [param] };
+        const event: Event = { name: 'data-event', data: param };
         const encodedData = EventStreamSerializer.encode(event);
 
         netSocket.emit('data', Buffer.from(encodedData));
@@ -112,16 +79,28 @@ describe('Socket', () => {
         expect(dataListener).toHaveBeenCalledWith(param);
     });
 
+    it('should emit an error when receiving malformed data', () => {
+        const netSocket = new NetSocket() as MockedObject<NetSocket>;
+        const socket = new Socket(netSocket);
+
+        const errorListener = vi.fn();
+        socket.on('error', errorListener);
+
+        netSocket.emit('data', Buffer.from('not-valid-base64\n'));
+
+        expect(errorListener).toHaveBeenCalledWith(expect.any(Error));
+    });
+
     it('should encode and send event data to the socket when emit is called', () => {
         const netSocket = new NetSocket() as MockedObject<NetSocket>;
         const socket = new Socket(netSocket);
 
         const eventName = 'test-event';
-        const eventArgs = [1, 'test', true];
+        const eventData = { id: 1, label: 'test', active: true };
 
-        socket.emit(eventName, ...eventArgs);
+        socket.emit(eventName, eventData);
 
-        const expectedMessage = EventStreamSerializer.encode({ name: eventName, params: eventArgs });
+        const expectedMessage = EventStreamSerializer.encode({ name: eventName, data: eventData });
         expect(netSocket.write).toHaveBeenCalledWith(expectedMessage);
     });
 
@@ -146,12 +125,62 @@ describe('Socket', () => {
         expect(netSocket.destroy).toHaveBeenCalled();
     });
 
-    it('should end the connection and resolve after disconnect', () => {
+    it('should end the connection and resolve after disconnect', async () => {
         const netSocket = new NetSocket() as MockedObject<NetSocket>;
         const socket = new Socket(netSocket);
+
         const disconnectPromise = socket.disconnect();
+        const closeHandler = netSocket.once.mock.calls.find(([event]) => String(event) === 'close')?.[1];
+        closeHandler?.();
 
         expect(netSocket.end).toHaveBeenCalled();
-        expect(disconnectPromise).resolves.toBeUndefined();
+        await expect(disconnectPromise).resolves.toBeUndefined();
+    });
+
+    it('should not emit event from incomplete data', () => {
+        const netSocket = new NetSocket() as MockedObject<NetSocket>;
+        const socket = new Socket(netSocket);
+        const listener = vi.fn();
+        socket.on('partial-event', listener);
+
+        const event: Event = { name: 'partial-event', data: 'hello' };
+        const encoded = EventStreamSerializer.encode(event);
+        const midpoint = Math.floor(encoded.length / 2);
+        netSocket.emit('data', Buffer.from(encoded.slice(0, midpoint)));
+
+        expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('should emit event when partial chunks complete a full message', () => {
+        const netSocket = new NetSocket() as MockedObject<NetSocket>;
+        const socket = new Socket(netSocket);
+        const listener = vi.fn();
+        socket.on('partial-event', listener);
+
+        const event: Event = { name: 'partial-event', data: 'hello' };
+        const encoded = EventStreamSerializer.encode(event);
+        const midpoint = Math.floor(encoded.length / 2);
+        netSocket.emit('data', Buffer.from(encoded.slice(0, midpoint)));
+        netSocket.emit('data', Buffer.from(encoded.slice(midpoint)));
+
+        expect(listener).toHaveBeenCalledWith('hello');
+    });
+
+    it('should handle multiple events arriving in a single chunk', () => {
+        const netSocket = new NetSocket() as MockedObject<NetSocket>;
+        const socket = new Socket(netSocket);
+
+        const listener = vi.fn();
+        socket.on('multi', listener);
+
+        const event1 = EventStreamSerializer.encode({ name: 'multi', data: 1 });
+        const event2 = EventStreamSerializer.encode({ name: 'multi', data: 2 });
+
+        // Both events in a single data chunk
+        netSocket.emit('data', Buffer.from(event1 + event2));
+
+        expect(listener).toHaveBeenCalledTimes(2);
+        expect(listener).toHaveBeenNthCalledWith(1, 1);
+        expect(listener).toHaveBeenNthCalledWith(2, 2);
     });
 });

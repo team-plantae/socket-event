@@ -5,61 +5,144 @@ A lightweight library for event-driven communication over TCP sockets, enabling 
 [![npm version](https://img.shields.io/npm/v/tcp-socket-event)](https://www.npmjs.com/package/tcp-socket-event)
 [![license](https://img.shields.io/npm/l/tcp-socket-event)](https://github.com/team-plantae/socket-event/blob/v2/LICENSE)
 
-## 🚀 Installation
+## Features
 
-Install the library via npm:
+- Familiar `on` / `emit` API built on top of Node.js `EventEmitter`
+- Base64-encoded JSON framing — works over any TCP stream
+- Server broadcasts to all connected clients
+- Automatic connection and disconnection tracking
+- Zero runtime dependencies
+
+## Installation
 
 ```bash
 npm install tcp-socket-event
 ```
 
-## 📖 Usage
+## Quick Start
 
 ### Server
-
-Create a TCP server, handle client connections, and broadcast messages to all connected clients.
 
 ```typescript
 import { Server } from 'tcp-socket-event';
 
 const server = new Server(1337);
 
-// Start the server
-server.start();
-
-// Listen for new client connections
-server.on('connection', (clientSocket) => {
-    console.log('Client connected!');
-
-    // Listen for events from the client
-    clientSocket.on('message', (data) => console.log('Client says:', data));
-
-    // Send a welcome message to the client
-    clientSocket.emit('welcome', 'Hello, client!');
+server.on('listening', () => {
+    console.log('Server listening on port 1337');
 });
 
-// Broadcast an event to all clients
-server.broadcast('announcement', 'Server-wide message to all clients');
+server.on('connection', (client) => {
+    console.log('Client connected');
 
-// Close the server and disconnect all clients
-server.close();
+    client.on('message', (text: string) => {
+        console.log('Received:', text);
+        client.emit('reply', `Echo: ${text}`);
+    });
+});
+
+server.on('disconnection', (client) => {
+    console.log('Client disconnected');
+});
+
+server.start();
 ```
 
 ### Client
-
-Connect to the server, emit events, and listen for responses.
 
 ```typescript
 import { Client } from 'tcp-socket-event';
 
 const client = new Client('localhost', 1337);
 
-// Listen for events from the server
-client.on('welcome', (message) => console.log('Server says:', message));
+client.on('connect', () => {
+    console.log('Connected to server');
+    client.emit('message', 'Hello!');
+});
 
-// Send an event to the server
-client.emit('message', 'Hello, server!');
+client.on('reply', (text: string) => {
+    console.log('Server says:', text);
+});
 
-// Disconnect
-await client.disconnect();
+client.on('close', () => {
+    console.log('Disconnected');
+});
 ```
+
+## Examples
+
+### Broadcasting to all clients
+
+```typescript
+const server = new Server(1337);
+
+server.on('connection', (client) => {
+    client.on('chat', (message: { nickname: string; text: string }) => {
+        // Forward to every connected client
+        server.broadcast('chat', message);
+    });
+});
+
+server.start();
+```
+
+### Sending structured data
+
+Events can carry any JSON-serializable data:
+
+```typescript
+// Client sends an object
+client.emit('player:move', { x: 10, y: 20, timestamp: Date.now() });
+
+// Server receives it
+socket.on('player:move', (data: { x: number; y: number; timestamp: number }) => {
+    console.log(data.x, data.y, data.timestamp);
+});
+```
+
+### Graceful shutdown
+
+```typescript
+process.on('SIGINT', () => {
+    server.broadcast('shutdown', 'Server is shutting down');
+    server.close(); // Disconnects all clients and closes the server
+});
+```
+
+## API
+
+### `Server`
+
+| Method | Description |
+|--------|-------------|
+| `new Server(port)` | Create a server bound to `port` |
+| `start()` | Start listening for connections |
+| `close()` | Close the server and disconnect all clients |
+| `broadcast(event, data?)` | Emit an event to every connected client |
+
+**Events:** `listening`, `connection`, `disconnection`, `error`
+
+### `Client`
+
+| Method | Description |
+|--------|-------------|
+| `new Client(host, port)` | Connect to a server |
+| `emit(event, data?)` | Send an event to the server |
+| `disconnect()` | Gracefully close the connection (returns `Promise`) |
+| `destroy()` | Immediately destroy the socket |
+
+**Events:** `connect`, `close`, `end`, `error`, plus any custom events from the server
+
+### `Socket`
+
+Base class used by both `Client` and server-side client sockets. Extends `EventEmitter`.
+
+## Protocol
+
+Messages are framed as **newline-delimited Base64-encoded JSON**:
+
+```
+{"name":"event-name","data":{"key":"value"}}  →  base64  →  <base64>\n
+```
+
+Each line is one event. The receiver splits on `\n`, decodes each chunk from Base64, and parses the JSON to extract `name` and `data`.

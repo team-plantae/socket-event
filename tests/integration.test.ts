@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { Server } from '../src/server';
 import { Client } from '../src/client';
 import { Socket } from '../src/socket';
